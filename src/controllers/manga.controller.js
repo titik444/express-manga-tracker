@@ -176,6 +176,7 @@ export const getGenres = async (req, res) => {
         const slug = href.replace(/^\/tags\//, "");
         genres.push({
           name,
+          slug,
           url: `/api/genres/${slug}`,
         });
       }

@@ -9,10 +9,10 @@ import {
 
 const mangaRouter = Router();
 
-mangaRouter.get("/latest-updates", getLatestUpdates);
-mangaRouter.get("/most-popular", getMostPopular);
-mangaRouter.get("/new-manga", getNewManga);
-mangaRouter.get("/genres", getGenres);
-mangaRouter.get("/genres/:genre", getMangaByGenre);
+mangaRouter.get("/manga/latest-updates", getLatestUpdates);
+mangaRouter.get("/manga/most-popular", getMostPopular);
+mangaRouter.get("/manga/new-manga", getNewManga);
+mangaRouter.get("/manga/genres", getGenres);
+mangaRouter.get("/manga/genres/:genre", getMangaByGenre);
 
 export default mangaRouter;
