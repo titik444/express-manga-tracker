@@ -1,6 +1,7 @@
 import "dotenv/config";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import scrapeChaptersBySlug from "../utils/scrapeChaptersBySlug.js";
 
 const SAILMG_BASE_URL = process.env.SAILMG_BASE_URL;
 
@@ -230,7 +231,9 @@ export const getMangaByGenre = async (req, res) => {
       const rawUrl = element
         .find(".views-field-title .field-content a")
         .attr("href");
-      const rawThumb = element.find(".views-field-field-image2 img").attr("src");
+      const rawThumb = element
+        .find(".views-field-field-image2 img")
+        .attr("src");
       const description = element
         .find(".views-field-body .field-content")
         .text()
@@ -283,6 +286,81 @@ export const getMangaByGenre = async (req, res) => {
     console.error("Error in getMangaByGenre:", err.message);
     res.status(500).json({
       message: "Failed to fetch manga by genre",
+      data: null,
+    });
+  }
+};
+
+export const getChaptersBySlug = async (req, res) => {
+  const { slug } = req.params;
+
+  if (!slug) {
+    return res.status(400).json({ message: "Slug is required", data: null });
+  }
+
+  try {
+    const chapters = await scrapeChaptersBySlug(slug);
+
+    if (!chapters) {
+      return res.status(404).json({
+        message: "Manga not found on source site",
+        data: null,
+      });
+    }
+
+    res.json({
+      message: "Chapters fetched successfully",
+      data: chapters,
+    });
+  } catch (err) {
+    console.error("Error in getChaptersBySlug:", err.message);
+    res.status(500).json({
+      message: "Failed to fetch chapters",
+      data: null,
+    });
+  }
+};
+
+export const searchManga = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res
+        .status(400)
+        .json({ message: "Query parameter 'q' is required", data: null });
+    }
+
+    const searchUrl = new URL(
+      `/search/node/${encodeURIComponent(q)}`,
+      SAILMG_BASE_URL
+    ).toString();
+
+    const { data } = await axios.get(searchUrl);
+    const $ = cheerio.load(data);
+
+    const results = [];
+
+    $("li.search-result").each((_, el) => {
+      const titleEl = $(el).find("h3.title a");
+      const title = titleEl.text().trim();
+      const href = titleEl.attr("href");
+
+      if (!href || !title) return;
+
+      const fullUrl = new URL(href, SAILMG_BASE_URL).toString();
+      const slug = href.split("/").filter(Boolean).pop();
+
+      results.push({ title, slug, url: fullUrl });
+    });
+
+    return res.json({
+      message: `Search results for '${q}'`,
+      data: results,
+    });
+  } catch (err) {
+    console.error("Error in searchManga:", err.message);
+    return res.status(500).json({
+      message: "Internal server error",
       data: null,
     });
   }

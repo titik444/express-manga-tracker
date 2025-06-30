@@ -10,6 +10,7 @@ export const authenticate = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
+
     const decoded = verifyAccessToken(token); // Jika expired, error dilempar ke catch
 
     const user = await prisma.user.findUnique({

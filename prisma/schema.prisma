@@ -22,10 +22,40 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  watchlist Watchlist[]
+
   @@map("user")
 }
 
 enum Role {
   ADMIN
   USER
+}
+
+model Watchlist {
+  id                String    @id @default(cuid()) @map("id")
+  userId            String    @map("user_id")
+  user              User      @relation(fields: [userId], references: [id])
+  title             String    @map("title")
+  slug              String    @map("slug")
+  url               String    @map("url")
+  thumb             String    @map("thumb")
+  latestChapterSlug String?   @map("latest_chapter_slug")
+  chapters          Chapter[]
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("watchlist")
+}
+
+model Chapter {
+  id          String    @id @default(cuid())
+  watchlistId String
+  title       String
+  slug        String
+  url         String
+  date        DateTime
+  watchlist   Watchlist @relation(fields: [watchlistId], references: [id])
+
+  @@map("chapter")
 }
