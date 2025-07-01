@@ -138,7 +138,7 @@ Response
 
 Endpoint :
 
-- GET {{BASE_URL}}/api/manga/genres
+- GET {{BASE_URL}}/api/manga/genre
 
 Response
 
@@ -166,7 +166,7 @@ Response
 
 Endpoint :
 
-- GET {{BASE_URL}}/api/manga/genres/:genre
+- GET {{BASE_URL}}/api/manga/genre/:genre
 
 Query Params
 
@@ -200,5 +200,119 @@ Response
     "perPage": 10,
     "totalPages": 34
   }
+}
+```
+
+## Get Manga By Search
+
+Endpoint :
+
+- GET {{BASE_URL}}/api/manga/search
+
+Query Params
+
+- page (default 1)
+- q (required)
+
+Response
+
+- Success (200)
+
+```json
+{
+	"message": "Search results for 'one'",
+	"data": [
+		{
+			"title": "One Piece",
+			"slug": "one-piece",
+			"url": "https://www.sailmg.com/content/one-piece"
+		},
+		{
+			"title": "Onepunch-Man (ONE)",
+			"slug": "onepunch-man-one",
+			"url": "https://www.sailmg.com/content/onepunch-man-one"
+		},
+		{
+			"title": "Goblin Slayer: Side Story Year One",
+			"slug": "goblin-slayer-side-story-year-one",
+			"url": "https://www.sailmg.com/content/goblin-slayer-side-story-year-one"
+		},
+		{
+			"title": "Urek Mazino",
+			"slug": "urek-mazino",
+			"url": "https://www.sailmg.com/content/urek-mazino"
+		},
+		{
+			"title": "Shangri-La Frontier ~ Kusoge Hunter, Kamige Ni Idoman To Su~",
+			"slug": "shangri-la-frontier-kusoge-hunter-kamige-ni-idoman-su",
+			"url": "https://www.sailmg.com/content/shangri-la-frontier-kusoge-hunter-kamige-ni-idoman-su"
+		},
+		{
+			"title": "One Piece Novel: Heroines",
+			"slug": "one-piece-novel-heroines",
+			"url": "https://www.sailmg.com/content/one-piece-novel-heroines"
+		},
+		{
+			"title": "Legend of the Northern Blade",
+			"slug": "legend-northern-blade",
+			"url": "https://www.sailmg.com/content/legend-northern-blade"
+		},
+		{
+			"title": "Onepunch-Man Manga",
+			"slug": "onepunch-man-manga",
+			"url": "https://www.sailmg.com/content/onepunch-man-manga"
+		},
+		{
+			"title": "The Indomitable Martial King",
+			"slug": "indomitable-martial-king",
+			"url": "https://www.sailmg.com/content/indomitable-martial-king"
+		},
+		{
+			"title": "The Strongest Wizard Becomes a Countryside Guardsman After Taking an Arrow to the Knee",
+			"slug": "strongest-wizard-becomes-countryside-guardsman-after-taking-arrow-knee",
+			"url": "https://www.sailmg.com/content/strongest-wizard-becomes-countryside-guardsman-after-taking-arrow-knee"
+		}
+	],
+	"pagination": {
+		"currentPage": 1,
+		"perPage": 10,
+		"totalPages": 27
+	}
+}
+```
+
+## Get Chapter By Slug
+
+Endpoint :
+
+- GET {{BASE_URL}}/api/manga/:manga/chapter
+
+Response
+
+- Success (200)
+
+```json
+{
+	"message": "Chapters fetched successfully",
+	"data": {
+		"title": "Naruto",
+		"slug": "naruto",
+		"url": "https://www.sailmg.com/content/naruto",
+		"thumb": "https://www.sailmg.com/sites/default/files/manga/cover/20160630053328616.jpg",
+		"chapters": [
+			{
+				"slug": "minato-one-shot-manga-naruto-gaiden-%E2%80%93-whirlwind-inside-vortex-0",
+				"title": "Minato One Shot Manga -Naruto Gaiden – The Whirlwind inside the Vortex 0",
+				"url": "https://www.sailmg.com/content/minato-one-shot-manga-naruto-gaiden-%E2%80%93-whirlwind-inside-vortex-0",
+				"date": "14 Jul 2023"
+			},
+			{
+				"slug": "naruto-7005",
+				"title": "Naruto 700.5",
+				"url": "https://www.sailmg.com/content/naruto-7005",
+				"date": "25 May 2022"
+			}
+		]
+	}
 }
 ```

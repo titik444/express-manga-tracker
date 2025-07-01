@@ -10,7 +10,7 @@ import {
 const watchListRouter = Router();
 
 watchListRouter.get("/watchList", authenticate, listWatchlist);
-watchListRouter.get("/watchList/chapters", listWatchlistChapters);
+watchListRouter.get("/watchList/chapter", listWatchlistChapters);
 watchListRouter.post("/watchList/:slug", authenticate, createWatchlist);
 watchListRouter.delete("/watchList/:slug", authenticate, deleteWatchlist);
 

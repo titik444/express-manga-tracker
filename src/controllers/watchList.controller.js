@@ -71,30 +71,58 @@ export const createWatchlist = async (req, res) => {
 export const listWatchlist = async (req, res) => {
   try {
     const userId = req.user.id;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const page = parseInt(req.query.page, 10) || 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.q || ""; // Optional query string
 
-    const watchlist = await prisma.watchlist.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        url: true,
-        thumb: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-    });
+    const whereCondition = {
+      userId,
+      ...(search && {
+        title: {
+          contains: search,
+        },
+      }),
+    };
 
-    res.json({
+    const [watchlist, totalItems] = await Promise.all([
+      prisma.watchlist.findMany({
+        where: whereCondition,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          url: true,
+          thumb: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          title: "asc",
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.watchlist.count({
+        where: whereCondition,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return res.json({
       message: "Watchlist fetched successfully",
       data: watchlist,
+      pagination: {
+        currentPage: page,
+        perPage: limit,
+        totalPages,
+        totalItems,
+      },
     });
   } catch (err) {
     console.error("Error in listWatchlist:", err.message);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Internal server error",
       data: null,
     });
@@ -103,6 +131,9 @@ export const listWatchlist = async (req, res) => {
 
 export const listWatchlistChapters = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const page = parseInt(req.query.page, 10) || 1;
+
     const allWatchlists = await prisma.watchlist.findMany({
       include: { chapters: true },
     });
@@ -154,7 +185,7 @@ export const listWatchlistChapters = async (req, res) => {
 
         // Ambil ulang chapter yg baru disimpan
         const updatedChapters = scraped.chapters.map((ch) => ({
-          id: crypto.randomUUID(), // placeholder, kamu bisa ambil dari DB kalau perlu ID asli
+          id: crypto.randomUUID(), // optional: gunakan ID asli jika diperlukan
           watchlistId: watchlist.id,
           title: ch.title,
           slug: ch.slug,
@@ -164,7 +195,6 @@ export const listWatchlistChapters = async (req, res) => {
 
         allChapters.push(...updatedChapters);
       } else {
-        // Tidak ada update
         allChapters.push(
           ...watchlist.chapters.map((ch) => ({
             id: ch.id,
@@ -178,19 +208,30 @@ export const listWatchlistChapters = async (req, res) => {
       }
     }
 
-    // Urutkan dari yang terbaru
-    allChapters.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Sort by date DESC (latest first)
+    const sortedChapters = allChapters.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
 
-    res.json({
+    // Pagination slice
+    const total = sortedChapters.length;
+    const totalPages = Math.ceil(total / limit);
+    const start = (page - 1) * limit;
+    const paginated = sortedChapters.slice(start, start + limit);
+
+    return res.json({
       message: "Watchlist fetched and synced",
-      data: allChapters,
+      data: paginated,
+      pagination: {
+        currentPage: page,
+        perPage: limit,
+        totalPages,
+        totalItems: total,
+      },
     });
   } catch (err) {
-    console.error("Error in getAllWatchlist:", err.message);
-    res.status(500).json({
-      message: "Internal server error",
-      data: null,
-    });
+    console.error("Error in listWatchlistChapters:", err.message);
+    res.status(500).json({ message: "Internal server error", data: null });
   }
 };
 

@@ -324,17 +324,21 @@ export const getChaptersBySlug = async (req, res) => {
 export const searchManga = async (req, res) => {
   try {
     const { q } = req.query;
+    const page = parseInt(req.query.page, 10) || 1;
     if (!q) {
-      return res
-        .status(400)
-        .json({ message: "Query parameter 'q' is required", data: null });
+      return res.status(400).json({
+        message: "Query parameter 'q' is required",
+        data: null,
+      });
     }
 
-    const searchUrl = new URL(
-      `/search/node/${encodeURIComponent(q)}`,
-      SAILMG_BASE_URL
-    ).toString();
+    const pageOffset = page - 1;
+    const path =
+      pageOffset === 0
+        ? `/search/node/${encodeURIComponent(q)}`
+        : `/search/node/${encodeURIComponent(q)}?page=${pageOffset}`;
 
+    const searchUrl = new URL(path, SAILMG_BASE_URL).toString();
     const { data } = await axios.get(searchUrl);
     const $ = cheerio.load(data);
 
@@ -353,9 +357,40 @@ export const searchManga = async (req, res) => {
       results.push({ title, slug, url: fullUrl });
     });
 
+    // Handle pagination info
+    const pageNumbers = [];
+
+    $(".pagination li a").each((_, el) => {
+      const href = $(el).attr("href");
+      const match = href?.match(/page=(\d+)/);
+      if (match) {
+        const num = parseInt(match[1], 10) + 1;
+        pageNumbers.push(num);
+      }
+    });
+
+    const activePage = parseInt($(".pagination li.active span").text(), 10);
+    if (!isNaN(activePage)) {
+      pageNumbers.push(activePage);
+    }
+
+    const totalPages = pageNumbers.length > 0 ? Math.max(...pageNumbers) : page;
+
+    if (page > totalPages) {
+      return res.status(404).json({
+        message: "Page not found",
+        data: null,
+      });
+    }
+
     return res.json({
       message: `Search results for '${q}'`,
       data: results,
+      pagination: {
+        currentPage: page,
+        perPage: results.length,
+        totalPages,
+      },
     });
   } catch (err) {
     console.error("Error in searchManga:", err.message);

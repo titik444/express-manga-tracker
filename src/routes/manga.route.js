@@ -14,8 +14,8 @@ const mangaRouter = Router();
 mangaRouter.get("/manga/latest-updates", getLatestUpdates);
 mangaRouter.get("/manga/most-popular", getMostPopular);
 mangaRouter.get("/manga/new-manga", getNewManga);
-mangaRouter.get("/manga/genres", getGenres);
-mangaRouter.get("/manga/genres/:genre", getMangaByGenre);
+mangaRouter.get("/manga/genre", getGenres);
+mangaRouter.get("/manga/genre/:genre", getMangaByGenre);
 mangaRouter.get("/manga/:slug/chapter", getChaptersBySlug);
 mangaRouter.get("/manga/search", searchManga);
 
